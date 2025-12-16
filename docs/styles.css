@@ -1,4 +1,7 @@
-/* Global fixed background */
+/* =========================================================
+   GLOBAL RESET — kill all hidden spacing
+   ========================================================= */
+
 html {
   background: linear-gradient(180deg, #eaf4fb 0%, #ffffff 100%);
   background-attachment: fixed;
@@ -6,19 +9,76 @@ html {
 }
 
 body {
+  margin: 0;
+  padding: 0;
   background: transparent;
   font-family: "Helvetica", "Arial", sans-serif;
   color: #1f2933;
 }
 
-/* Main content container */
-main.content {
-  max-width: 1200px;
-  margin: 0 auto;               /* ← THIS IS THE KEY */
-  padding: 0.75rem 1.25rem; 
+/* Quarto layout wrappers */
+.page-columns {
+  padding-top: 0 !important;
 }
 
-main.content section:first-of-type {
+.quarto-title-block,
+.quarto-title-meta {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+/* =========================================================
+   MAIN CONTENT
+   ========================================================= */
+
+main.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.25rem 1rem 1.25rem;
+}
+
+
+/* =========================================================
+   HEADER IMAGE
+   ========================================================= */
+
+.poster-header-img {
+  display: block;
+  width: 100%;
+  max-width: 1200px;
+  padding-top: 1rem;
+  margin: 0.5rem auto 0.25rem auto;
+  border-radius: 12px;
+}
+
+
+/* =========================================================
+   TABLE OF CONTENTS
+   ========================================================= */
+
+nav#TOC,
+#TOC {
+  margin-top: 0.25rem !important;
+  margin-bottom: 1rem;
+  padding-top: 0 !important;
+}
+
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+
+section {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid #e5e7eb;
+}
+
+main.content > section:first-of-type {
   margin-top: 0;
 }
 
@@ -26,45 +86,33 @@ section:has(> h2:only-child) {
   display: none;
 }
 
-/* Section blocks */
-section {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 1.5rem 2rem;
-  margin-bottom: 1.25rem;  /* reduce vertical gaps */
-  
-  /* Subtle border */
-  border: 1px solid #e5e7eb;
-  box-shadow: none;
-}
 
-/* Section titles (INTRODUCCIÓN, METODOLOGÍA, etc.) */
+/* =========================================================
+   HEADINGS
+   ========================================================= */
+
 section > h2 {
   background: linear-gradient(180deg, #4fa3d1, #3b8bbd);
   color: #ffffff;
   padding: 0.6rem 1.2rem;
   border-radius: 10px;
-  margin: -1.5rem -2rem 1.5rem -2rem;
+  margin: -1.5rem -2rem 1.25rem -2rem;
   font-size: 1.4rem;
   letter-spacing: 0.5px;
 }
 
-/* Subsection titles */
 section h3 {
   color: #2f6f9f;
-  margin-left: 0 !important;
-  padding-left: 0 !important;
-
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-
+  margin: 0;
+  padding: 0;
   text-align: left;
 }
 
 
-/* Tables (like methods/tools) */
+/* =========================================================
+   TABLES
+   ========================================================= */
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -83,7 +131,11 @@ td {
   border-bottom: 1px solid #dbe7f1;
 }
 
-/* Figures */
+
+/* =========================================================
+   FIGURES
+   ========================================================= */
+
 figure {
   background: #f8fbfe;
   padding: 1rem;
@@ -91,37 +143,8 @@ figure {
   margin: 1.5rem 0;
 }
 
-/* Captions */
 figcaption {
   font-size: 0.9rem;
   color: #4b5563;
   margin-top: 0.5rem;
-}
-
-.poster-header-img {
-  width: 100%;
-  max-width: 1200px;
-  display: block;
-  margin: 0 auto 0 auto;
-  border-radius: 12px;
-}
-
-.quarto-title-block {
-  display: none;
-}
-
-/* Remove all default top spacing */
-body {
-  margin: 0;
-  padding: 0;
-}
-
-/* Remove Quarto internal top padding */
-.page-columns {
-  padding-top: 0 !important;
-}
-
-/* Ensure content starts immediately */
-main.content {
-  padding-top: 0 !important;
 }

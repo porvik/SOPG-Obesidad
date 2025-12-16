@@ -1,4 +1,8 @@
 ---
+title: ss
+author:
+  - name: AUTHOR1, AUTHOR2, AUTHOR3, AUTHOR4, Viktor Porvaznik
+    affiliation: "UNIR"
 format:
   html:
     toc: true
@@ -8,7 +12,8 @@ format:
 
 <img src="assets/header.png" alt="Poster header" class="poster-header-img">
 
-## Introducción a
+## Inicio
+## Introducción
 TBD
 
 ## Objetivos
