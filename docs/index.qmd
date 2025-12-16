@@ -1,5 +1,6 @@
 ---
-title: ss
+title: "RNA-seq Obesidad — Análisis Completo"
+title-block: false
 author:
   - name: AUTHOR1, AUTHOR2, AUTHOR3, AUTHOR4, Viktor Porvaznik
     affiliation: "UNIR"
