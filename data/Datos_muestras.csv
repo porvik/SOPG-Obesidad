@@ -1,0 +1,6 @@
+"sample","condition","edad","sexo","fastq_file"
+"AbrahamSimpson","Obeso1",80,"Masculino","fastq_files/AbrahamSimpson_R1.fastq.gz"
+"HomerSimpson","Obeso1",40,"Masculino","fastq_files/HomerSimpson_R1.fastq.gz"
+"BartSimpson","Normopeso",10,"Masculino","fastq_files/BartSimpson_R1.fastq.gz"
+"LisaSimpson","Normopeso",8,"Femenino","fastq_files/LisaSimpson_R1.fastq.gz"
+"MaggieSimpson","Normopeso",1,"Femenino","fastq_files/MaggieSimpson_R1.fastq.gz"
