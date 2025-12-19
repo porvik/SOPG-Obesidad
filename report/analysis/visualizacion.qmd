@@ -90,6 +90,26 @@ library(DESeq2)
 library(tibble)
 library(dplyr)
 
+res_df <- load_de_results("de_sex_age_condition")
+dds <- readRDS(paste0(PROJECT_DIR, "/results/deseq2/de_sex_age_condition.rds"))
+coldata <- read.csv(paste0(PROJECT_DIR, "/data/design_metadata_corrected.csv"), row.names=1)
+
+# Factores
+coldata$condition <- factor(
+  coldata$condition,
+  levels = c(1, 2),
+  labels = c("control", "obese")
+)
+
+coldata$sex <- factor(
+  coldata$sex,
+  levels = c(1, 2),
+  labels = c("male", "female")
+)
+
+# Numérica (explícito, por higiene)
+coldata$age <- as.numeric(coldata$age)
+
 res_sex <- results(dds, name = "sex_female_vs_male") |>
   as.data.frame() |>
   rownames_to_column("gene") |>
