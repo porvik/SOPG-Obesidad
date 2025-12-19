@@ -50,12 +50,12 @@ jobs:
 
       - name: Render Quarto site
         run: |
-          quarto render docs/index.qmd
+          quarto render report/index.qmd
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: report
 
   deploy:
     needs: build

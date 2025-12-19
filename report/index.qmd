@@ -1,0 +1,76 @@
+---
+title: "RNA-seq Obesidad — Análisis Completo"
+author:
+  - name: AUTHOR1, AUTHOR2, AUTHOR3, AUTHOR4, Viktor Porvaznik
+    affiliation: "UNIR"
+---
+
+<img src="assets/header.png" alt="Poster header" class="poster-header-img"/>
+
+## Inicio
+
+## Introducción
+
+Grupo Europa / Par -\> Obeso 1 frente a Normopeso
+
+Contexto de analisis, hipotesis y objetivos.
+
+## Objetivos
+
+TBD
+
+## Metodología
+
+TBD
+
+## Analisis
+
+### Herramientas Utilizadas
+
+| Etapa del análisis | Herramienta(s) |
+|----|----|
+| Control de calidad | FastQC, MultiQC |
+| Recorte y filtrado de lecturas | Fastp, Trimmomatic |
+| Alineamiento / pseudoalineamiento | Salmon, STAR, HISAT2, Bowtie2 |
+| Cuantificación de expresión | Salmon, featureCounts |
+| Agregación transcrito → gen | tximport |
+| Normalización y expresión diferencial | DESeq2, edgeR, limma-voom |
+| Visualización de resultados | Ggplot2, EnhancedVolcano, pheatmap |
+| Enriquecimiento funcional (opcional) | clusterProfiler, Enrichr, gprofiler |
+
+### Preparación del Entorno
+Usando R 4.5.1, en consola R instalamos Bioconductor, paquetes basicos de R y paquetes especializados de Bioconductor.
+
+```r
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(version = "3.18")
+
+install.packages("R.utils")
+install.packages("here")
+install.packages("dplyr")
+install.packages("circlize")
+
+BiocManager::install("DESeq2")
+BiocManager::install("EnhancedVolcano")
+BiocManager::install("ComplexHeatmap")
+```
+
+{{< include analysis/normalizacion_y_de.qmd >}}
+{{< include analysis/visualizacion.qmd >}}
+
+## Resultados
+
+Poster se puede descargar aqui
+
+## Discusiopn
+
+Interpretación Biológica TBD
+
+## Conclusiones
+
+TBD
+
+## Posibles Mejoras
+
+TBD
