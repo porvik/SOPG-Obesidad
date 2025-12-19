@@ -3,9 +3,20 @@ title: "RNA-seq Obesidad — Análisis Completo"
 author:
   - name: AUTHOR1, AUTHOR2, AUTHOR3, AUTHOR4, Viktor Porvaznik
     affiliation: "UNIR"
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    css: assets/styles.css
+    theme: cosmo
 ---
 
 <img src="assets/header.png" alt="Poster header" class="poster-header-img"/>
+
+```{r}
+#| echo: false
+PROJECT_DIR <- Sys.getenv("PROJECT_DIR")
+```
 
 ## Inicio
 
@@ -27,21 +38,22 @@ TBD
 
 ### Herramientas Utilizadas
 
-| Etapa del análisis | Herramienta(s) |
-|----|----|
-| Control de calidad | FastQC, MultiQC |
-| Recorte y filtrado de lecturas | Fastp, Trimmomatic |
-| Alineamiento / pseudoalineamiento | Salmon, STAR, HISAT2, Bowtie2 |
-| Cuantificación de expresión | Salmon, featureCounts |
-| Agregación transcrito → gen | tximport |
-| Normalización y expresión diferencial | DESeq2, edgeR, limma-voom |
-| Visualización de resultados | Ggplot2, EnhancedVolcano, pheatmap |
-| Enriquecimiento funcional (opcional) | clusterProfiler, Enrichr, gprofiler |
+| Etapa del análisis                    | Herramienta(s)                      |
+|---------------------------------------|-------------------------------------|
+| Control de calidad                    | FastQC, MultiQC                     |
+| Recorte y filtrado de lecturas        | Fastp, Trimmomatic                  |
+| Alineamiento / pseudoalineamiento     | Salmon, STAR, HISAT2, Bowtie2       |
+| Cuantificación de expresión           | Salmon, featureCounts               |
+| Agregación transcrito → gen           | tximport                            |
+| Normalización y expresión diferencial | DESeq2, edgeR, limma-voom           |
+| Visualización de resultados           | Ggplot2, EnhancedVolcano, pheatmap  |
+| Enriquecimiento funcional (opcional)  | clusterProfiler, Enrichr, gprofiler |
 
 ### Preparación del Entorno
+
 Usando R 4.5.1, en consola R instalamos Bioconductor, paquetes basicos de R y paquetes especializados de Bioconductor.
 
-```r
+``` r
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install(version = "3.18")
@@ -50,26 +62,341 @@ install.packages("R.utils")
 install.packages("here")
 install.packages("dplyr")
 install.packages("circlize")
+install.packages("readr")
 
 BiocManager::install("DESeq2")
 BiocManager::install("EnhancedVolcano")
 BiocManager::install("ComplexHeatmap")
+BiocManager::install("tximport")
+BiocManager::install("edgeR")
+BiocManager::install("limma")
 ```
 
-{{< include analysis/normalizacion_y_de.qmd >}}
-{{< include analysis/visualizacion.qmd >}}
+### Normalización y Expresión Diferencial
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show analysis code"
+#| results: false
+#| warning: false
+#| message: false
+
+readRenviron("/home/vikto/work/bioinf/sopg/SOPG-Obesidad/report/.Renviron")
+
+library(dplyr)
+library(DESeq2)
+library(EnhancedVolcano)
+
+PROJECT_DIR <- Sys.getenv("PROJECT_DIR")
+
+coldata <- read.csv(paste0(PROJECT_DIR, "/data/design_metadata_corrected.csv"), row.names=1)
+
+coldata$condition <- factor(
+  coldata$condition,
+  levels = c(1, 2),
+  labels = c("control", "obese")
+)
+
+coldata$sex <- factor(
+  coldata$sex,
+  levels = c(1, 2),
+  labels = c("male", "female")
+)
+
+coldata$age <- as.numeric(coldata$age)
+
+get_counts <- function()
+{
+  counts <- read.csv(paste0(PROJECT_DIR, "/results/counts/using_linux/matriz_cuentas_crudas.csv"), row.names=1)
+  counts_filtered <- counts[, colnames(counts) %in% rownames(coldata)]
+  counts_filtered <- as.matrix(counts_filtered)
+  storage.mode(counts_filtered) <- "integer"
+  return(counts_filtered)
+}
+
+get_counts_R <- function()
+{
+  counts <- read.csv(paste0(PROJECT_DIR, "/results/counts/using_R/matriz_cuentas_crudas.csv"), row.names=1)
+  counts <- counts %>%
+    filter(if_any(where(is.numeric), ~ . != 0))
+  counts
+  map <- read.csv(paste0(PROJECT_DIR, "/results/counts/using_R/mapeo_genes.csv"), row.names = 1)
+
+  rn <- rownames(counts)
+  new_rn <- map$gene_symbol[
+    match(rn, map$ensembl_id_clean)
+  ]
+  new_rn[is.na(new_rn)] <- rn[is.na(new_rn)]
+  rownames(counts) <- new_rn
+  return(counts)
+}
+```
+
+#### DESeq2
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show analysis code"
+#| results: false
+#| warning: false
+#| message: false
+
+deseq2_exec <- function(counts, coldata, design, outfile)
+{
+  dds <- DESeqDataSetFromMatrix(countData = counts, colData = coldata, design = design)
+  
+  dds <- DESeq(dds, fitType = "mean")
+  res <- results(dds)
+  
+  res_tested <- res[!is.na(res$pvalue), ]
+  write.csv(res_tested, paste0(PROJECT_DIR, "/results/deseq2/", outfile ,".csv"))
+
+  saveRDS(dds, paste0(PROJECT_DIR, "/results/deseq2/", outfile ,".rds"))
+
+  return(res_tested)
+}
+```
+
+Usando datos generados por R:
+```{r}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show analysis code"
+#| results: false
+#| warning: false
+#| message: false
+
+counts <- get_counts_R()
+res_df = deseq2_exec(counts = counts, coldata = coldata, design = ~ condition, "de_condition_R")
+
+res_df <- as.data.frame(res_df) |>
+  tibble::rownames_to_column(var = "label")
+
+p <- EnhancedVolcano(
+  res_df,
+  lab = res_df$label,
+  x = "log2FoldChange",
+  y = "pvalue",
+  pCutoff = 0.05,
+  FCcutoff = 1,
+  title = "DESeq2 - Obeso 1 vs. Normopeso (R)",
+  subtitle = ""
+)
+
+ggsave(
+  filename = paste0(PROJECT_DIR, "/results/plots/de_deseq2_condition.png"),
+  plot = p,
+  width = 8,
+  height = 6,
+  dpi = 300
+)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "DESeq2 - Obeso 1 vs. Normopeso (R)"
+#| fig-width: 8
+#| fig-height: 8
+#| dpi: 300
+p
+```
+
+Usando datos generados por Linux:
+```{r}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show analysis code"
+#| results: false
+#| warning: false
+#| message: false
+
+counts <- get_counts()
+res_df = deseq2_exec(counts = counts, coldata = coldata, design = ~ condition, "de_condition_linux")
+
+res_df <- as.data.frame(res_df) |>
+  tibble::rownames_to_column(var = "label")
+
+p <- EnhancedVolcano(
+  res_df,
+  lab = res_df$label,
+  x = "log2FoldChange",
+  y = "pvalue",
+  pCutoff = 0.05,
+  FCcutoff = 1,
+  title = "DESeq2 - Obeso 1 vs. Normopeso",
+  subtitle = ""
+)
+
+ggsave(
+  filename = paste0(PROJECT_DIR, "/results/plots/de_deseq2_condition.png"),
+  plot = p,
+  width = 8,
+  height = 6,
+  dpi = 300
+)
+```
+
+
+```{r}
+#| echo: false
+#| fig-cap: "DESeq2 - Obeso 1 vs. Normopeso"
+#| fig-width: 8
+#| fig-height: 8
+#| dpi: 300
+p
+```
+
+#### edgeR
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show analysis code"
+#| results: false
+#| warning: false
+#| message: false
+
+library(edgeR)
+
+counts <- get_counts()
+y <- DGEList(counts = counts)
+
+keep <- filterByExpr(y, group = coldata$condition)
+y <- y[keep, , keep.lib.sizes = FALSE]
+
+y <- calcNormFactors(y)
+
+design <- model.matrix(~ condition, data = coldata)
+
+y   <- estimateDisp(y, design)
+fit <- glmQLFit(y, design)
+
+qlf <- glmQLFTest(fit, coef = "conditionobese")
+
+res <- topTags(qlf, n = Inf)$table
+
+res$gene <- rownames(res)
+res <- res[, c("gene", setdiff(colnames(res), "gene"))]
+
+p <- EnhancedVolcano(
+  res,
+  lab = res$gene,
+  x = "logFC",
+  y = "FDR",
+  pCutoff = 0.05,
+  FCcutoff = 1,
+  pointSize = 2.0,
+  labSize = 3.0,
+  col = c("grey70", "grey70", "steelblue", "firebrick"),
+  colAlpha = 0.9,
+  title = "edgeR - Obeso 1 vs. Normopeso",
+  subtitle = "QLF",
+  xlab = bquote(Log[2]~"fold change"),
+  ylab = bquote(-Log[10]~"FDR"),
+  legendPosition = "top",
+  drawConnectors = TRUE,
+  widthConnectors = 0.5
+)
+
+ggsave(
+  filename = paste0(PROJECT_DIR, "/results/plots/de_edgeR_condition.png"),
+  plot = p,
+  width = 8,
+  height = 6,
+  dpi = 300
+)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "edgeR - Obeso 1 vs. Normopeso"
+#| fig-width: 8
+#| fig-height: 8
+#| dpi: 300
+p
+```
+
+#### limma-voom
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show analysis code"
+#| results: false
+#| warning: false
+#| message: false
+library(limma)
+library(edgeR)
+
+counts <- get_counts()
+
+y <- DGEList(counts)
+y <- calcNormFactors(y)
+
+design <- model.matrix(~ condition, data = coldata)
+
+fit <- lmFit(voom(y, design), design)
+fit <- eBayes(fit)
+
+res <- topTable(
+  fit,
+  coef = grep("^condition", colnames(design), value = TRUE),
+  number = Inf,
+  sort.by = "P"
+)
+res$gene <- rownames(res)
+
+p <- EnhancedVolcano(
+  res,
+  lab = res$gene,
+  x = "logFC",
+  y = "adj.P.Val",
+  pCutoff = 0.05,
+  FCcutoff = 1,
+  title = "limma-voom - Obeso 1 vs. Normopeso",
+  subtitle = "",
+  xlab = bquote(Log[2]~"fold change"),
+  ylab = bquote(-Log[10]~"FDR"),
+  drawConnectors = TRUE
+)
+
+ggsave(
+  filename = paste0(PROJECT_DIR, "/results/plots/de_limma_condition.png"),
+  plot = p,
+  width = 8,
+  height = 6,
+  dpi = 300
+)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "limma-voom - Obeso 1 vs. Normopeso"
+#| fig-width: 8
+#| fig-height: 8
+#| dpi: 300
+p
+```
 
 ## Resultados
 
-Poster se puede descargar aqui
+Dado que la correlación entre la condición (obeso vs. control) y la edad es elevada `cor(as.numeric(coldata$condition == "obese"), coldata$age)` (r = 0.896), existe una colinealidad severa asociada a la variable edad. De forma similar, el número de muestras no es suficiente para estimar de manera robusta el efecto del sexo. Por estas razones, se excluyeron la edad y el sexo del diseño experimental, manteniéndose únicamente la condición como factor en el análisis.
 
-## Discusiopn
+## Discusion
 
-Interpretación Biológica TBD
+TBD
 
 ## Conclusiones
 
-TBD
+<!-- ```{r}
+#| fig-cap: "DESeq2 design: condition"
+#| fig-label: deseq-condition
+if (file.exists(paste0(PROJECT_DIR, "/results/plots/de_condition.png"))) {
+  knitr::include_graphics(paste0(PROJECT_DIR, "/results/plots/de_condition.png"))
+}
+``` -->
 
 ## Posibles Mejoras
 
