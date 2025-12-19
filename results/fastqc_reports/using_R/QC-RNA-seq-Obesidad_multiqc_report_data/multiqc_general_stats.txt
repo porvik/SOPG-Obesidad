@@ -1,6 +1,0 @@
-Sample	FastQC_mqc-generalstats-fastqc-percent_duplicates	FastQC_mqc-generalstats-fastqc-percent_gc	FastQC_mqc-generalstats-fastqc-avg_sequence_length	FastQC_mqc-generalstats-fastqc-median_sequence_length	FastQC_mqc-generalstats-fastqc-percent_fails	FastQC_mqc-generalstats-fastqc-total_sequences
-AbrahamSimpson_R1	0.8333333333333286	46.0	151.0	151	10.0	1320.0
-BartSimpson_R1	0.6024096385542066	46.0	151.0	151	0.0	1328.0
-HomerSimpson_R1	0.6060606060606091	45.0	151.0	151	10.0	1320.0
-LisaSimpson_R1	0.30303030303031164	46.0	151.0	151	10.0	1320.0
-MaggieSimpson_R1	0.22590361445783458	45.0	151.0	151	0.0	1328.0

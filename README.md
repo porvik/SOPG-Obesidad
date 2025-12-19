@@ -3,8 +3,8 @@
 ## Estructura del repositorio
 El repositorio SOPG-Obesidad está organizado para facilitar un análisis reproducible de RNA-seq, separando claramente los datos de entrada, el análisis, los resultados y el material de entrega final.
 
-- `analysis/`
-Contiene el análisis reproducible en R Markdown (analysis.Rmd).
+- `report/`
+Contiene el análisis reproducible en R y Bash.
 En este documento se implementa todo el pipeline del estudio, es decir importación de datos, cuantificación, normalización, análisis de expresión diferencial, visualización de resultados e interpretación biológica.
 
 - `data/`

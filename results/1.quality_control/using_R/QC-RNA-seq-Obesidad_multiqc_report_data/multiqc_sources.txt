@@ -1,0 +1,6 @@
+Module	Section	Sample Name	Source
+FastQC	all_sections	MaggieSimpson_R1	/home/melissa/Documents/Máster bioinformática 2025-2027/Secuenciación y ómicas de próxima generación/Actividades/Actividades  2/Actividad 2/resultados/fastqc_reports/MaggieSimpson_R1_fastqc.zip
+FastQC	all_sections	HomerSimpson_R1	/home/melissa/Documents/Máster bioinformática 2025-2027/Secuenciación y ómicas de próxima generación/Actividades/Actividades  2/Actividad 2/resultados/fastqc_reports/HomerSimpson_R1_fastqc.zip
+FastQC	all_sections	BartSimpson_R1	/home/melissa/Documents/Máster bioinformática 2025-2027/Secuenciación y ómicas de próxima generación/Actividades/Actividades  2/Actividad 2/resultados/fastqc_reports/BartSimpson_R1_fastqc.zip
+FastQC	all_sections	AbrahamSimpson_R1	/home/melissa/Documents/Máster bioinformática 2025-2027/Secuenciación y ómicas de próxima generación/Actividades/Actividades  2/Actividad 2/resultados/fastqc_reports/AbrahamSimpson_R1_fastqc.zip
+FastQC	all_sections	LisaSimpson_R1	/home/melissa/Documents/Máster bioinformática 2025-2027/Secuenciación y ómicas de próxima generación/Actividades/Actividades  2/Actividad 2/resultados/fastqc_reports/LisaSimpson_R1_fastqc.zip

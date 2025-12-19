@@ -1,0 +1,10 @@
+{
+    "salmon_version": "1.10.3",
+    "index": "index",
+    "libType": "A",
+    "mates1": "Fastqs/HomerSimpson_R1.fastq.gz",
+    "mates2": "Fastqs/HomerSimpson_R2.fastq.gz",
+    "threads": "4",
+    "output": "Salmon/HomerSimpson",
+    "auxDir": "aux_info"
+}
