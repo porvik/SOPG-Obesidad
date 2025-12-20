@@ -37,12 +37,12 @@ Melissa Ndombasi Bokuy, Viktor Porvaznik, Jose Iglesias Moure, Lydia Alvarez Erv
 ## Inicio
 
 ## Introducción
-La obesidad, cuya prevalencia ha aumentado significativamente en los últimos años, está asociada con un aumento de la mortalidad y de la incidencia de otras enfermedades. La obesidad se asocia con cambios epigéneticos, metabólicos y la activación de la respuesta inflamatoria que puede alterar el patrón de expresión génica. El objetivo de este estudio es investigar la expresión de 37 genes asociados con la obesidad en individuos obesos y normopesos.​ ^[Grupo 2 Europa / Par -\> Obeso 1 frente a Normopeso]
+La obesidad, cuya prevalencia ha aumentado significativamente en los últimos años, está asociada con un aumento de la mortalidad y de la incidencia de otras enfermedades. La obesidad se asocia con cambios epigéneticos, metabólicos y la activación de la respuesta inflamatoria que puede alterar el patrón de expresión génica. El objetivo de este estudio es investigar la expresión de 37 genes asociados con la obesidad en individuos obesos y normopesos.​ ^[Grupo Europa / Par -\> Obeso 1 frente a Normopeso]
 
 Este poster se puede descargar [como presentación (PPTX)](assets/SOPG-Obesidad-Gropo2-EU.pptx) o [como PDF](assets/SOPG-Obesidad-Gropo2-EU.pdf) o se puede acceder el <a href="https://github.com/porvik/SOPG-Obesidad" target="_blank" title="Ir a GitHub">Repositorio <span class="bi bi-github" style="font-size:1em;"> de Proyecto</span></a>.
 
 ## Metodología
-Dado que el número de muestras no es suficiente para estimar de manera robusta el efecto del sexo de forma independiente, se optó por un diseño experimental simplificado. En consecuencia, el análisis se centró en la condición (obeso vs. control) como factor principal. Para la identificación de genes significativamente desregulados entre grupos se aplicó un umbral de valor p < 0.05 y de log2FC > 1 o < −1 (volcano plots y complex heatmap), o de log2FC > 0.25 o < −0.25 (heatmap). Para el análisis de enriquecimiento de vías, se redujeron de forma notable los umbrales de valor p ajustado con el fin de identificar posibles asociaciones funcionales (ver pies de figura).
+Se procesaron datos de RNA-seq realizando control de calidad con FastQC, filtrado mediante fastp y cuantificación de la expresión génica utilizando Salmon. Dado que la correlación entre la condición (obeso vs. control) y la edad es elevada (r = 0.896), existe una colinealidad severa asociada a la variable edad y por lo tanto se optó no usarla en el diseño. Para la determinación de genes significativamente desregulados entre grupos se ha aplicado un umbral de valor p <0.05 y de log2FC >1 o <-1 (Volcano plots y Complex Heatmap) o de log2FC >0.25 o <-0.25 (Heatmap). Para el enriquecimiento de vías, se han reducido notablemente los umbrales de valor p ajustado con el fin de identificar posibles asociaciones funcionales (ver pies de figura).
 
 ## Analisis
 
@@ -629,7 +629,7 @@ y <- y[keep, , keep.lib.sizes = FALSE]
 
 y <- calcNormFactors(y)
 
-design <- model.matrix(~ sex + condition, data = coldata)
+design <- model.matrix(~ condition, data = coldata)
 
 y   <- estimateDisp(y, design)
 fit <- glmQLFit(y, design)
@@ -686,7 +686,7 @@ counts <- get_counts()
 y <- DGEList(counts)
 y <- calcNormFactors(y)
 
-design <- model.matrix(~ sex + condition, data = coldata)
+design <- model.matrix(~ condition, data = coldata)
 
 fit <- lmFit(voom(y, design), design)
 fit <- eBayes(fit)
@@ -730,6 +730,7 @@ ggsave(
 #|   **DESeq2 — Obeso 1 vs. Normopeso.**
 #| fig-width: 8
 #| fig-height: 8
+#| dpi: 300
 knitr::include_graphics("assets/de_deseq2_condition.png")
 ```
 
@@ -739,6 +740,7 @@ knitr::include_graphics("assets/de_deseq2_condition.png")
 #|   **edgeR - Obeso 1 vs. Normopeso.**
 #| fig-width: 8
 #| fig-height: 8
+#| dpi: 300
 knitr::include_graphics("assets/de_edgeR_condition.png")
 ```
 
@@ -748,6 +750,7 @@ knitr::include_graphics("assets/de_edgeR_condition.png")
 #|   **limma-voom - Obeso 1 vs. Normopeso.**
 #| fig-width: 8
 #| fig-height: 8
+#| dpi: 300
 knitr::include_graphics("assets/de_limma_condition.png")
 ```
 
@@ -758,7 +761,8 @@ knitr::include_graphics("assets/de_limma_condition.png")
 #|   **(A) DESeq2 - Obeso 1 vs. Normopeso Heatmap**
 #| fig-width: 8
 #| fig-height: 8
-knitr::include_graphics("assets/HEATMAP_WO_COLNAMES.png")
+#| dpi: 300
+# knitr::include_graphics("assets/heatmap.png")
 ```
 ```{r}
 #| echo: false
@@ -766,6 +770,7 @@ knitr::include_graphics("assets/HEATMAP_WO_COLNAMES.png")
 #|   **(B) DESeq2 - Obeso 1 vs. Normopeso Complex Heatmap**
 #| fig-width: 8
 #| fig-height: 8
+#| dpi: 300
 knitr::include_graphics("assets/de_deseq2_heatmap.png")
 ```
 
@@ -776,8 +781,8 @@ knitr::include_graphics("assets/de_deseq2_heatmap.png")
 #|   **Análisis de enriquecimiento de rutas GO mediante GSEA **
 #| fig-width: 8
 #| fig-height: 8
-knitr::include_graphics("assets/GSEA_GO_BP_DOTPLOT.png")
-knitr::include_graphics("assets/GSEA_GO_MF_RIDGEPLOT.png")
+#| dpi: 300
+# knitr::include_graphics("assets/enriqucimiento.png")
 ```
 
 ## Discusion
@@ -786,4 +791,4 @@ El análisis de expresión diferencial revela un perfil transcriptómico coheren
 La LEP (leptina), secretada por el tejido adiposo, actúa como señal de saciedad, informando sobre el estado energético del organismo. El aumento de LEPR (receptor de leptina) en obesidad sugiere resistencia a la leptina, caracterizada por la disminución de sensibilidad a la hormona en tejidos diana, especialmente en el hipotálamo. Por otro lado, la disminución de NTRK2 (TrkB) podría contribuir a la resistencia a la leptina al comprometer la vía de señalización BDNF-TrkB, lo cual a su vez deteriora la capacidad del sistema nervioso central para responder apropiadamente a las señales de saciedad y mantener el balance energético.
 
 ## Conclusiones
-Este estudio sugiere una desregulación coordinada de la señalización LEP-BDNF-TrkB en obesidad, donde la regulación compensatoria del LEPR coexiste con la disminución de componentes clave de sus vías efectoras downstream (TrkB), contribuyendo así a la resistencia a leptina y al mantenimiento del fenotipo obeso. No obstante, los resultados presentan diversas limitaciones relacionadas con el reducido número de genes y muestras analizadas, la diferencia de edad de los miembros de ambos grupos y la relación familiar de los mismos. Todos estos factores pueden afectar a los resultados obtenidos. 
+Este estudio sugiere una desregulación coordinada de la señalización LEP-BDNF-TrkB en obesidad, donde la regulación compensatoria del LEPR coexiste con la disminución de componentes clave de sus vías efectoras downstream (TrkB), contribuyendo así a la resistencia a leptina y al mantenimiento del fenotipo obeso. No obstante, los resultados presentan diversas limitaciones relacionadas con el reducido número de genes y muestras analizadas, la diferencia de edad de los miembros de ambos grupos y la relación familiar de los mismos. Todos estos factores pueden afectar a los resultados obtenidos.
