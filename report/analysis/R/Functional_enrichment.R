@@ -40,7 +40,7 @@ gsea_bp <- gseGO(
   keyType = "ENTREZID",
   minGSSize = 1,
   maxGSSize = 500,
-  pvalueCutoff = 1,
+  pvalueCutoff = 0.75,
   verbose = FALSE
 )
 
@@ -51,7 +51,7 @@ gsea_reactome <- gsePathway(
   geneList = gene_list,
   organism = "human",
   minGSSize = 1,
-  pvalueCutoff = 1,
+  pvalueCutoff = 0.75,
   verbose = FALSE
 )
 
