@@ -125,12 +125,18 @@ section:has(> h6) {
 }
 
 /* Remove bottom gap after h3+ sections */
-section:has(> h3),
+section:has(> h3) {
+  margin-bottom: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
 section:has(> h4),
 section:has(> h5),
 section:has(> h6) {
-  margin-bottom: 0.5rem !important;
-  padding-bottom: 0.5rem !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
   margin-top: 0 !important;
   padding-top: 0 !important;
 }
@@ -183,4 +189,39 @@ figcaption {
   font-size: 0.9rem;
   color: #4b5563;
   margin-top: 0.5rem;
+}
+
+/* =========================================================
+   FOOTNOTES
+   ========================================================= */
+
+/* quita la línea horizontal */
+.footnotes::before,
+.footnotes hr {
+  display: none !important;
+}
+
+/* quita el título "Footnotes" */
+.footnotes > h2 {
+  display: none !important;
+}
+
+/* sin caja, sin borde, sin fondo */
+.footnotes {
+  all: unset;
+  display: block;
+  max-width: 1200px;
+  margin: 0.75rem auto 0 auto;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+/* lista limpia */
+.footnotes ol {
+  padding-left: 1.25rem;
+  margin: 0;
+}
+
+.footnotes li {
+  margin: 0.25rem 0;
 }
