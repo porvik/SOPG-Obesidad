@@ -32,11 +32,14 @@ file.copy(
   overwrite = TRUE
 )
 ```
+Melissa Ndombasi Bokuy, Viktor Porvaznik, Jose Iglesias Moure, Lydia Alvarez Erviti, Maria del Mar Rodriguez Ruiz
 
 ## Inicio
 
 ## Introducción
 La obesidad, cuya prevalencia ha aumentado significativamente en los últimos años, está asociada con un aumento de la mortalidad y de la incidencia de otras enfermedades. La obesidad se asocia con cambios epigéneticos, metabólicos y la activación de la respuesta inflamatoria que puede alterar el patrón de expresión génica. El objetivo de este estudio es investigar la expresión de 37 genes asociados con la obesidad en individuos obesos y normopesos.​ ^[Grupo Europa / Par -\> Obeso 1 frente a Normopeso]
+
+Este poster se puede descargar [como presentación (PPTX)](assets/SOPG-Obesidad-Gropo2-EU.pptx) o [como PDF](assets/SOPG-Obesidad-Gropo2-EU.pdf) o se puede acceder el <a href="https://github.com/porvik/SOPG-Obesidad" target="_blank" title="Ir a GitHub">Repositorio <span class="bi bi-github" style="font-size:1em;"> de Proyecto</span></a>.
 
 ## Metodología
 Dado que la correlación entre la condición (obeso vs. control) y la edad es elevada (r = 0.896), existe una colinealidad severa asociada a la variable edad. De forma similar, el número de muestras no es suficiente para estimar de manera robusta el efecto del sexo. Por estas razones, se excluyeron la edad y el sexo del diseño experimental, manteniéndose únicamente la condición como factor en el análisis. Para la determinación de genes significativamente desregulados entre grupos se ha aplicado un umbral de valor p <0.05 y de log2FC >1 o <-1 (Volcano plots) o de log2FC >0.25 o <-0.25 (Heatmap). Para el enriquecimiento de vías, se han reducido notablemente los umbrales de valor p ajustado con el fin de identificar posibles asociaciones funcionales (ver pies de figura).
