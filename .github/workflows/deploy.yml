@@ -39,11 +39,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
 
-      # - name: Install R packages
-      #   run: |
-      #     Rscript -e 'install.packages(c("tidyverse","pheatmap","EnhancedVolcano","dplyr","readr","R.utils","circlize","here"))'
-      #     Rscript -e 'if (!requireNamespace("BiocManager", quietly=TRUE)) install.packages("BiocManager")'
-      #     Rscript -e 'BiocManager::install(c("DESeq2","tximport","EnhancedVolcano","ComplexHeatmap","tximport","limma","edgeR"), ask=FALSE)'
+      - name: Install R packages
+        run: |
+          Rscript -e 'install.packages(c("rmarkdown","knitr"))'
 
       - name: Install Quarto
         uses: quarto-dev/quarto-actions/setup@v2
