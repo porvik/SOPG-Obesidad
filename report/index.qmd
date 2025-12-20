@@ -1,7 +1,7 @@
 ---
 title: "RNA-seq Obesidad — Análisis Completo"
 author:
-  - name: AUTHOR1, AUTHOR2, AUTHOR3, AUTHOR4, Viktor Porvaznik
+  - name: Melissa Ndombasi Bokuy, Viktor Porvaznik, Jose Iglesias Moure, Lydia Alvarez Erviti, Maria del Mar Rodriguez Ruiz​
     affiliation: "UNIR"
 format:
   html:
@@ -14,25 +14,34 @@ format:
 <img src="assets/header.png" alt="Poster header" class="poster-header-img"/>
 
 ```{r}
-#| echo: false
+#| include: false
 PROJECT_DIR <- Sys.getenv("PROJECT_DIR")
+```
+
+```{r}
+#| include: false
+src_dir  <- file.path("/home/vikto/work/bioinf/sopg/SOPG-Obesidad/", "results/5.plots")
+dest_dir <- "assets"
+
+dir.create(dest_dir, showWarnings = FALSE, recursive = TRUE)
+
+files <- list.files(src_dir, pattern = "\\.png$", full.names = TRUE)
+file.copy(
+  from = files,
+  to   = dest_dir,
+  overwrite = TRUE
+)
 ```
 
 ## Inicio
 
 ## Introducción
+La obesidad, cuya prevalencia ha aumentado significativamente en los últimos años, está asociada con un aumento de la mortalidad y de la incidencia de otras enfermedades. La obesidad se asocia con cambios epigéneticos, metabólicos y la activación de la respuesta inflamatoria que puede alterar el patrón de expresión génica. El objetivo de este estudio es investigar la expresión de 37 genes asociados con la obesidad en individuos obesos y normopesos.​ ^[Grupo 2 Europa / Par -\> Obeso 1 frente a Normopeso]
 
-Grupo Europa / Par -\> Obeso 1 frente a Normopeso
-
-Contexto de analisis, hipotesis y objetivos.
-
-## Objetivos
-
-TBD
+Este poster se puede descargar [como presentación (PPTX)](assets/SOPG-Obesidad-Gropo2-EU.pptx) o [como PDF](assets/SOPG-Obesidad-Gropo2-EU.pdf).
 
 ## Metodología
-
-TBD
+Dado que la correlación entre la condición (obeso vs. control) y la edad es elevada (r = 0.896), existe una colinealidad severa asociada a la variable edad. De forma similar, el número de muestras no es suficiente para estimar de manera robusta el efecto del sexo. Por estas razones, se excluyeron la edad y el sexo del diseño experimental, manteniéndose únicamente la condición como factor en el análisis. Para la determinación de genes significativamente desregulados entre grupos se ha aplicado un umbral de valor p <0.05 y de log2FC >1 o <-1 (Volcano plots) o de log2FC >0.25 o <-0.25 (Heatmap). Para el enriquecimiento de vías, se han reducido notablemente los umbrales de valor p ajustado con el fin de identificar posibles asociaciones funcionales (ver pies de figura).
 
 ## Analisis
 
@@ -49,8 +58,23 @@ TBD
 | Visualización de resultados           | Ggplot2, EnhancedVolcano, pheatmap  |
 | Enriquecimiento funcional (opcional)  | clusterProfiler, Enrichr, gprofiler |
 
-### Preparación del Entorno
+### Control de Caliad y Filtrado
+```{bash, file="analysis/Linux/pipeline_control_calidad.sh", eval=FALSE}
+#| code-fold: true
+#| code-summary: "Show pipeline_control_calidad.sh"
+```
 
+### Alineamiento y Cuantificación
+```{bash, file="analysis/Linux/pipeline_salmon.sh", eval=FALSE}
+#| code-fold: true
+#| code-summary: "Show pipeline_salmon.sh"
+```
+```{R, file="analysis/R/counts_extraction_byLinux.R", eval=FALSE}
+#| code-fold: true
+#| code-summary: "Show counts_extraction_byLinux.R"
+```
+
+### Preparación del Entorno
 Usando R 4.5.1, en consola R instalamos Bioconductor, paquetes basicos de R y paquetes especializados de Bioconductor.
 
 ``` r
@@ -73,9 +97,9 @@ BiocManager::install("limma")
 ```
 
 ### Normalización y Expresión Diferencial
-
 ```{r}
 #| echo: true
+#| eval: false
 #| code-fold: true
 #| code-summary: "Show analysis code"
 #| results: false
@@ -108,7 +132,7 @@ coldata$age <- as.numeric(coldata$age)
 
 get_counts <- function()
 {
-  counts <- read.csv(paste0(PROJECT_DIR, "/results/counts/using_linux/matriz_cuentas_crudas.csv"), row.names=1)
+  counts <- read.csv(paste0(PROJECT_DIR, "/results/3.counts/using_Linux/conteos_raw_salmon.csv"), row.names=1)
   counts_filtered <- counts[, colnames(counts) %in% rownames(coldata)]
   counts_filtered <- as.matrix(counts_filtered)
   storage.mode(counts_filtered) <- "integer"
@@ -117,11 +141,11 @@ get_counts <- function()
 
 get_counts_R <- function()
 {
-  counts <- read.csv(paste0(PROJECT_DIR, "/results/counts/using_R/matriz_cuentas_crudas.csv"), row.names=1)
+  counts <- read.csv(paste0(PROJECT_DIR, "/results/3.counts/using_R/matriz_cuentas_crudas.csv"), row.names=1)
   counts <- counts %>%
     filter(if_any(where(is.numeric), ~ . != 0))
   counts
-  map <- read.csv(paste0(PROJECT_DIR, "/results/counts/using_R/mapeo_genes.csv"), row.names = 1)
+  map <- read.csv(paste0(PROJECT_DIR, "/results/3.counts/using_R/mapeo_genes.csv"), row.names = 1)
 
   rn <- rownames(counts)
   new_rn <- map$gene_symbol[
@@ -134,9 +158,9 @@ get_counts_R <- function()
 ```
 
 #### DESeq2
-
 ```{r}
 #| echo: true
+#| eval: false
 #| code-fold: true
 #| code-summary: "Show analysis code"
 #| results: false
@@ -151,17 +175,33 @@ deseq2_exec <- function(counts, coldata, design, outfile)
   res <- results(dds)
   
   res_tested <- res[!is.na(res$pvalue), ]
-  write.csv(res_tested, paste0(PROJECT_DIR, "/results/deseq2/", outfile ,".csv"))
+  write.csv(res_tested, paste0(PROJECT_DIR, "/results/4.deseq2/", outfile ,".csv"))
 
-  saveRDS(dds, paste0(PROJECT_DIR, "/results/deseq2/", outfile ,".rds"))
+  saveRDS(dds, paste0(PROJECT_DIR, "/results/4.deseq2/", outfile ,".rds"))
 
   return(res_tested)
+}
+
+deseq2_exec_2 <- function(counts, coldata, design, outfile)
+{
+  dds <- DESeqDataSetFromMatrix(countData = counts, colData = coldata, design = design)
+  
+  dds <- DESeq(dds, fitType = "mean")
+  res <- results(dds)
+  
+  res_tested <- res[!is.na(res$pvalue), ]
+  write.csv(res_tested, paste0(PROJECT_DIR, "/results/4.deseq2/", outfile ,".csv"))
+
+  saveRDS(dds, paste0(PROJECT_DIR, "/results/4.deseq2/", outfile ,".rds"))
+
+  return(list(res_tested = res_tested, dds = dds))
 }
 ```
 
 Usando datos generados por R:
 ```{r}
 #| echo: true
+#| eval: false
 #| code-fold: true
 #| code-summary: "Show analysis code"
 #| results: false
@@ -174,7 +214,7 @@ res_df = deseq2_exec(counts = counts, coldata = coldata, design = ~ condition, "
 res_df <- as.data.frame(res_df) |>
   tibble::rownames_to_column(var = "label")
 
-p <- EnhancedVolcano(
+de_deseq2_condition_r <- EnhancedVolcano(
   res_df,
   lab = res_df$label,
   x = "log2FoldChange",
@@ -186,26 +226,18 @@ p <- EnhancedVolcano(
 )
 
 ggsave(
-  filename = paste0(PROJECT_DIR, "/results/plots/de_deseq2_condition.png"),
-  plot = p,
+  filename = paste0(PROJECT_DIR, "/results/5.plots/de_deseq2_condition.png"),
+  plot = de_deseq2_condition_r,
   width = 8,
   height = 6,
   dpi = 300
 )
 ```
 
-```{r}
-#| echo: false
-#| fig-cap: "DESeq2 - Obeso 1 vs. Normopeso (R)"
-#| fig-width: 8
-#| fig-height: 8
-#| dpi: 300
-p
-```
-
 Usando datos generados por Linux:
 ```{r}
 #| echo: true
+#| eval: false
 #| code-fold: true
 #| code-summary: "Show analysis code"
 #| results: false
@@ -213,12 +245,12 @@ Usando datos generados por Linux:
 #| message: false
 
 counts <- get_counts()
-res_df = deseq2_exec(counts = counts, coldata = coldata, design = ~ condition, "de_condition_linux")
+res_df = deseq2_exec(counts = counts, coldata = coldata, design = ~ sex + condition, "de_condition_linux")
 
 res_df <- as.data.frame(res_df) |>
   tibble::rownames_to_column(var = "label")
 
-p <- EnhancedVolcano(
+de_deseq2_condition <- EnhancedVolcano(
   res_df,
   lab = res_df$label,
   x = "log2FoldChange",
@@ -230,28 +262,356 @@ p <- EnhancedVolcano(
 )
 
 ggsave(
-  filename = paste0(PROJECT_DIR, "/results/plots/de_deseq2_condition.png"),
-  plot = p,
+  filename = paste0(PROJECT_DIR, "/results/5.plots/de_deseq2_condition.png"),
+  plot = de_deseq2_condition,
   width = 8,
   height = 6,
   dpi = 300
 )
 ```
-
-
-```{r}
-#| echo: false
-#| fig-cap: "DESeq2 - Obeso 1 vs. Normopeso"
-#| fig-width: 8
-#| fig-height: 8
-#| dpi: 300
-p
-```
-
-#### edgeR
+Complex heatmap:
 
 ```{r}
 #| echo: true
+#| eval: false
+#| code-fold: true
+#| code-summary: "Show analysis code"
+#| results: false
+#| warning: false
+#| message: false
+par(mar = c(8, 8, 8, 8))
+
+counts <- get_counts()
+res = deseq2_exec_2(counts = counts, coldata = coldata, design = ~ sex + condition, "de_condition_linux_heatmap")
+res_df <- res$res_tested
+de_condition_linux_dds <- res$dds
+
+library(DESeq2)
+library(circlize)
+
+## =============================
+## INPUT
+## =============================
+counts <- as.matrix(counts)
+genes  <- rownames(counts)
+
+stopifnot(all(colnames(counts) == rownames(coldata)))
+
+## =============================
+## CIRCOS SETUP
+## =============================
+circos.clear()
+
+circos.par(
+  start.degree = 90,
+  gap.degree = 1,
+  cell.padding = c(0, 0, 0, 0),
+  track.margin = c(0.01, 0.01),
+  canvas.xlim = c(-1.1, 1.1),
+  canvas.ylim = c(-1.1, 1.1)
+)
+
+circos.initialize(
+  factors = genes,
+  xlim = cbind(rep(0, length(genes)), rep(1, length(genes)))
+)
+
+## =============================
+## DESeq2 RESULTS
+## =============================
+res_cond <- results(de_condition_linux_dds,
+                    name = "condition_obese_vs_control")
+
+res_sex  <- results(de_condition_linux_dds,
+                    name = "sex_female_vs_male")
+
+cond_fc <- res_cond$log2FoldChange
+sex_fc  <- res_sex$log2FoldChange
+sex_p   <- res_sex$pvalue
+
+names(cond_fc) <- rownames(res_cond)
+names(sex_fc)  <- rownames(res_sex)
+names(sex_p)   <- rownames(res_sex)
+
+cond_fc <- cond_fc[genes]
+sex_fc  <- sex_fc[genes]
+sex_p   <- sex_p[genes]
+
+## =============================
+## COLOR SCALES PER RING
+## =============================
+
+# Condition (log2FC)
+cond_lim <- max(abs(cond_fc), na.rm = TRUE)
+common_lim <- max(abs(c(cond_fc, sex_fc)), na.rm = TRUE)
+col_cond <- colorRamp2(
+  c(-common_lim, 0, common_lim),
+  c("#3B4CC0", "white", "#F78429")
+)
+
+# Sex (log2FC)
+sex_lim <- max(abs(sex_fc), na.rm = TRUE)
+col_sex <- colorRamp2(
+  c(-sex_lim, 0, sex_lim),
+  c("#2C7BB6", "white", "#D7191C")
+)
+
+## =============================
+## CONDITION RING
+## =============================
+p_thr  <- 0.05
+fc_thr <- 1
+
+cond_p <- res_cond$pvalue
+names(cond_p) <- rownames(res_cond)
+cond_p <- cond_p[genes]
+
+cond_highlight <- (!is.na(cond_p) & cond_p < p_thr) |
+                  (!is.na(cond_fc) & abs(cond_fc) >= fc_thr)
+
+circos.trackPlotRegion(
+  ylim = range(cond_fc, na.rm = TRUE),
+  track.height = 0.15,
+  bg.col = NA,
+  bg.border = NA,
+  panel.fun = function(x, y) {
+
+    i <- CELL_META$sector.numeric.index
+    v <- cond_fc[i]
+    hl <- isTRUE(cond_highlight[i])
+
+    fill_col <- if (is.na(v)) "grey85" else col_cond(v)
+
+    circos.rect(
+      CELL_META$xlim[1], CELL_META$ylim[1],
+      CELL_META$xlim[2], CELL_META$ylim[2],
+      col = fill_col,
+      border = NA
+    )
+
+    if (hl) {
+      circos.rect(
+        CELL_META$xlim[1], CELL_META$ylim[1],
+        CELL_META$xlim[2], CELL_META$ylim[2],
+        col = NA,
+        border = "red",
+        lwd = 4
+      )
+    }
+  }
+)
+
+## =============================
+## SEX RING
+## =============================
+sex_dir <- sign(sex_fc)
+
+sex_highlight <- (!is.na(sex_p)  & sex_p < p_thr) |
+                 (!is.na(sex_fc) & abs(sex_fc) >= fc_thr)
+
+circos.trackPlotRegion(
+  ylim = range(sex_fc, na.rm = TRUE),
+  track.height = 0.15,
+  bg.col = NA,
+  bg.border = NA,
+  panel.fun = function(x, y) {
+
+    i <- CELL_META$sector.numeric.index
+    v <- sex_fc[i]
+    hl <- isTRUE(sex_highlight[i])
+    dir <- sex_dir[i]
+
+    fill_col <- if (is.na(v)) "grey85" else col_sex(v)
+
+    circos.rect(
+      CELL_META$xlim[1], CELL_META$ylim[1],
+      CELL_META$xlim[2], CELL_META$ylim[2],
+      col = fill_col,
+      border = NA
+    )
+
+    if (hl) {
+      border_col <- if (!is.na(dir) && dir > 0) "blue" else "pink"
+
+      circos.rect(
+        CELL_META$xlim[1], CELL_META$ylim[1],
+        CELL_META$xlim[2], CELL_META$ylim[2],
+        col = NA,
+        border = border_col,
+        lwd = 2
+      )
+    }
+  }
+)
+
+## =============================
+## GENE LABELS (OUTER)
+## =============================
+circos.trackPlotRegion(
+  ylim = c(0, 1),
+  track.height = 0.08,
+  bg.col = NA,
+  bg.border = NA,
+  panel.fun = function(x, y) {
+    circos.text(
+      x = 0.5,
+      y = 5.5,
+      labels = CELL_META$sector.index,
+      facing = "clockwise",
+      niceFacing = TRUE,
+      adj = c(0, 0.5),
+      cex = 1.5
+    )
+  }
+)
+
+## =============================
+## SIDE RING DESCRIPTIONS
+## =============================
+par(xpd = NA)
+
+# Condition
+segments(0.25, 0.38, 0.65, 0.60, lwd = 1, lty = 2)
+text(0.2, 0.38, "Condicion", adj = c(1, 0.5), cex = 1.2, font = 2)
+
+# Sex
+segments(0.25, 0.28, 0.62, 0.40, lwd = 1, lty = 2)
+text(0.2, 0.28, "Factor del sexo", adj = c(1, 0.5), cex = 1.2, font = 2)
+
+## =============================
+## LEGEND (CENTER)
+## =============================
+par(xpd = NA)
+
+z <- seq(-sex_lim, sex_lim, length.out = 100)
+
+dx <- -0.50
+dy <- -0.08
+
+rect(
+  xleft   = seq(0.35, 0.65, length.out = 100) + dx,
+  ybottom = 0.08 + dy,
+  xright  = seq(0.35, 0.65, length.out = 100) + dx + 0.003,
+  ytop    = 0.11 + dy,
+  col     = col_sex(z),
+  border  = NA
+)
+
+segments(
+  x0 = c(0.35, 0.50, 0.65) + dx,
+  x1 = c(0.35, 0.50, 0.65) + dx,
+  y0 = 0.07 + dy,
+  y1 = 0.08 + dy
+)
+
+text(
+  x = c(0.35, 0.50, 0.65) + dx,
+  y = 0.055 + dy,
+  labels = c(
+    sprintf("%.1f", -sex_lim),
+    "0",
+    sprintf("%.1f", sex_lim)
+  ),
+  cex = 1.2
+)
+
+text(
+  x = 0.50 + dx,
+  y = 0.125 + dy,
+  labels = "Sexo (log2FC)",
+  font = 2,
+  cex = 1.2
+)
+
+z <- seq(-1, 1, length.out = 100)
+
+dx <- -0.50
+dy <- -0.26
+
+par(xpd = NA)
+
+z <- seq(-cond_lim, cond_lim, length.out = 100)
+
+rect(
+  xleft  = seq(0.35, 0.65, length.out = 100) + dx,
+  ybottom = 0.08 + dy,
+  xright = seq(0.35, 0.65, length.out = 100) + dx + 0.003,
+  ytop   = 0.11 + dy,
+  col    = col_cond(z),
+  border = NA
+)
+
+segments(
+  x0 = c(0.35, 0.50, 0.65) + dx,
+  x1 = c(0.35, 0.50, 0.65) + dx,
+  y0 = 0.07 + dy,
+  y1 = 0.08 + dy
+)
+
+text(
+  x = c(0.35, 0.50, 0.65) + dx,
+  y = 0.055 + dy,
+  labels = c(
+    sprintf("%.1f", -cond_lim),
+    "0",
+    sprintf("%.1f", cond_lim)
+  ),
+  cex = 1.2
+)
+
+text(
+  x = 0.50 + dx,
+  y = 0.125 + dy,
+  labels = "Condicion (log2FC)",
+  font = 2,
+  cex = 1.2
+)
+
+# -----------------------------
+# Highlight legend (red border)
+# -----------------------------
+
+dx <- -0.72
+dy <- -0.35
+
+rect(
+  xleft  = 0.35 + dx,
+  ybottom = 0.015 + dy,
+  xright = 0.38 + dx,
+  ytop   = 0.045 + dy,
+  col    = NA,
+  border = "red",
+  lwd    = 3
+)
+
+# Línea 1
+text(
+  x = 0.40 + dx,
+  y = 0.040 + dy,
+  labels = "Condición destacada:",
+  font = 2,
+  adj = c(0, 0.5),
+  cex = 1.2
+)
+
+# Línea 2
+text(
+  x = 0.40 + dx,
+  y = -0.03 + dy,
+  labels = expression(
+    italic("p") < 0.05~" o "~"|"*log[2]*"FC| " >= 1
+  ),
+  adj = c(0, 0.5),
+  cex = 1.2
+)
+
+circos_mem <- recordPlot()
+dev.off()
+```
+#### edgeR
+```{r}
+#| echo: true
+#| eval: false
 #| code-fold: true
 #| code-summary: "Show analysis code"
 #| results: false
@@ -280,7 +640,7 @@ res <- topTags(qlf, n = Inf)$table
 res$gene <- rownames(res)
 res <- res[, c("gene", setdiff(colnames(res), "gene"))]
 
-p <- EnhancedVolcano(
+de_edgeR_condition <- EnhancedVolcano(
   res,
   lab = res$gene,
   x = "logFC",
@@ -301,27 +661,17 @@ p <- EnhancedVolcano(
 )
 
 ggsave(
-  filename = paste0(PROJECT_DIR, "/results/plots/de_edgeR_condition.png"),
-  plot = p,
+  filename = paste0(PROJECT_DIR, "/results/5.plots/de_edgeR_condition.png"),
+  plot = de_edgeR_condition,
   width = 8,
   height = 6,
   dpi = 300
 )
 ```
-
-```{r}
-#| echo: false
-#| fig-cap: "edgeR - Obeso 1 vs. Normopeso"
-#| fig-width: 8
-#| fig-height: 8
-#| dpi: 300
-p
-```
-
 #### limma-voom
-
 ```{r}
 #| echo: true
+#| eval: false
 #| code-fold: true
 #| code-summary: "Show analysis code"
 #| results: false
@@ -348,7 +698,7 @@ res <- topTable(
 )
 res$gene <- rownames(res)
 
-p <- EnhancedVolcano(
+de_limma_condition <- EnhancedVolcano(
   res,
   lab = res$gene,
   x = "logFC",
@@ -363,41 +713,76 @@ p <- EnhancedVolcano(
 )
 
 ggsave(
-  filename = paste0(PROJECT_DIR, "/results/plots/de_limma_condition.png"),
-  plot = p,
+  filename = paste0(PROJECT_DIR, "/results/5.plots/de_limma_condition.png"),
+  plot = de_limma_condition,
   width = 8,
   height = 6,
   dpi = 300
 )
 ```
 
+## Resultados
+**Figura 1. Volcano Plots** - Representación de la significación estadística frente al cambio relativo de los 37 genes analizados utilizando tres herramientas bioinformáticas (DESeq2, edgeR y limma-voom) (p-adj < 0.05), comparando individuos obesos con normopeso. Se destacan los genes LEPR (sobreexpresado), LEP y NTRK2 (subexpresados).
 ```{r}
 #| echo: false
-#| fig-cap: "limma-voom - Obeso 1 vs. Normopeso"
+#| fig-cap: |
+#|   **DESeq2 — Obeso 1 vs. Normopeso.**
 #| fig-width: 8
 #| fig-height: 8
-#| dpi: 300
-p
+knitr::include_graphics("assets/de_deseq2_condition.png")
 ```
 
-## Resultados
+```{r}
+#| echo: false
+#| fig-cap: |
+#|   **edgeR - Obeso 1 vs. Normopeso.**
+#| fig-width: 8
+#| fig-height: 8
+knitr::include_graphics("assets/de_edgeR_condition.png")
+```
 
-Dado que la correlación entre la condición (obeso vs. control) y la edad es elevada `cor(as.numeric(coldata$condition == "obese"), coldata$age)` (r = 0.896), existe una colinealidad severa asociada a la variable edad. De forma similar, el número de muestras no es suficiente para estimar de manera robusta el efecto del sexo. Por estas razones, se excluyeron la edad y el sexo del diseño experimental, manteniéndose únicamente la condición como factor en el análisis.
+```{r}
+#| echo: false
+#| fig-cap: |
+#|   **limma-voom - Obeso 1 vs. Normopeso.**
+#| fig-width: 8
+#| fig-height: 8
+knitr::include_graphics("assets/de_limma_condition.png")
+```
+
+**Figura 2.** - **(A) Heatmap** que muestra niveles de expresión normalizados de los genes significativos en individuos obesos frente a normopesos (p-adj < 0.05). **(B) Complex Heatmap** en el que, además, se muestra la correlación con el factor sexo.
+```{r}
+#| echo: false
+#| fig-cap: |
+#|   **(A) DESeq2 - Obeso 1 vs. Normopeso Heatmap**
+#| fig-width: 8
+#| fig-height: 8
+knitr::include_graphics("assets/HEATMAP_WO_COLNAMES.png")
+```
+```{r}
+#| echo: false
+#| fig-cap: |
+#|   **(B) DESeq2 - Obeso 1 vs. Normopeso Complex Heatmap**
+#| fig-width: 8
+#| fig-height: 8
+knitr::include_graphics("assets/de_deseq2_heatmap.png")
+```
+
+**Figura 3. Análisis de enriquecimiento de rutas GO mediante GSEA** - Visualización de las principales vías de procesos biológicos identificadas. Las categorías con P valor < 0.75 se incluyen con fines exploratorios pese a no alcanzar el umbral de significancia estadística en las condiciones analizadas.
+```{r}
+#| echo: false
+#| fig-cap: |
+#|   **Análisis de enriquecimiento de rutas GO mediante GSEA **
+#| fig-width: 8
+#| fig-height: 8
+knitr::include_graphics("assets/GSEA_GO_BP_DOTPLOT.png")
+knitr::include_graphics("assets/GSEA_GO_MF_RIDGEPLOT.png")
+```
 
 ## Discusion
+El análisis de expresión diferencial revela un perfil transcriptómico coherente con las alteraciones metabólicas y neurobiológicas asociadas a la obesidad, identificando tres genes significativamente diferencialmente expresados entre individuos normopeso y obesos: NTRK2 y LEP (down-regulados en obesidad) y LEPR (up-regulado en obesidad).
 
-TBD
+La LEP (leptina), secretada por el tejido adiposo, actúa como señal de saciedad, informando sobre el estado energético del organismo. El aumento de LEPR (receptor de leptina) en obesidad sugiere resistencia a la leptina, caracterizada por la disminución de sensibilidad a la hormona en tejidos diana, especialmente en el hipotálamo. Por otro lado, la disminución de NTRK2 (TrkB) podría contribuir a la resistencia a la leptina al comprometer la vía de señalización BDNF-TrkB, lo cual a su vez deteriora la capacidad del sistema nervioso central para responder apropiadamente a las señales de saciedad y mantener el balance energético.
 
 ## Conclusiones
-
-<!-- ```{r}
-#| fig-cap: "DESeq2 design: condition"
-#| fig-label: deseq-condition
-if (file.exists(paste0(PROJECT_DIR, "/results/plots/de_condition.png"))) {
-  knitr::include_graphics(paste0(PROJECT_DIR, "/results/plots/de_condition.png"))
-}
-``` -->
-
-## Posibles Mejoras
-
-TBD
+Este estudio sugiere una desregulación coordinada de la señalización LEP-BDNF-TrkB en obesidad, donde la regulación compensatoria del LEPR coexiste con la disminución de componentes clave de sus vías efectoras downstream (TrkB), contribuyendo así a la resistencia a leptina y al mantenimiento del fenotipo obeso. No obstante, los resultados presentan diversas limitaciones relacionadas con el reducido número de genes y muestras analizadas, la diferencia de edad de los miembros de ambos grupos y la relación familiar de los mismos. Todos estos factores pueden afectar a los resultados obtenidos. 
